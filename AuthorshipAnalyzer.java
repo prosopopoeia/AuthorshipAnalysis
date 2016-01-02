@@ -16,9 +16,9 @@ import javax.swing.*;
  */
 public class AuthorshipAnalyzer
 {
-    private Author knownAuthor, unknownAuthor, author;
+    private Author knownAuthor, unknownAuthor;
     ArrayList<Author> authorList = new ArrayList<Author>();
-    TreeMap<String, Double> authorMatchList = new TreeMap<String, Double>();/////reverse for clarity
+    TreeMap<String, Double> authorMatchList = new TreeMap<String, Double>();
     private BookMetrics metrics;
     
     /**
@@ -27,15 +27,7 @@ public class AuthorshipAnalyzer
     public AuthorshipAnalyzer() {
         authorList = new ArrayList<Author>();
     }
-    
-    /**
-     * Compares text of unknown authorship with list of known authors
-     */
-    public void compareTexts()
-    {
-       
-    }
-    
+        
     /**
      * Creates a profile for text with unknown authorship
      * 
@@ -68,10 +60,10 @@ public class AuthorshipAnalyzer
      */
     private void createAuthorList(String authorName, String filePath) {
         metrics = new BookMetrics(filePath, true);
-        int authIndex = 0;
+        int authorIndex = 0;
         if (authorList.contains(authorName)) {
-            authIndex = authorList.indexOf(authorName);
-            knownAuthor = authorList.get(authIndex);
+            authorIndex = authorList.indexOf(authorName);
+            knownAuthor = authorList.get(authorIndex);
             knownAuthor.setAvgWordLength(metrics.avgWordLength());
             knownAuthor.setAvgSentenceLength(metrics.avgSentenceLength());
             knownAuthor.setWordToSentenceRatio(metrics.wordToSentenceRatio());
@@ -79,7 +71,7 @@ public class AuthorshipAnalyzer
             knownAuthor.setSymbolFrequency(metrics.getSymbolFrequencyMap());
             knownAuthor.setBiGramFrequency(metrics.getSymbolPairFrequencyMap());
             knownAuthor.setTriGramFrequency(metrics.getTriGramFrequencyMap());
-            knownAuthor.setFourGramFrequency(metrics.getFourGramFrequencyMap());//-----------------review logic
+            knownAuthor.setFourGramFrequency(metrics.getFourGramFrequencyMap());
             authorList.add(knownAuthor);
         }
         else {
