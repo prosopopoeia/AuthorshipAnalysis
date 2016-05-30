@@ -1,6 +1,7 @@
 import java.util.*;
 /**
- * Class to hold information pertaining to an author
+ * Class to hold information pertaining to an author - if multiple texts are used
+ * the each work's metrics are combined into a single value for each metric.
  * 
  * @author Jason Isaacs 
  * @version v1.2
@@ -20,18 +21,35 @@ public class Author
     }
     
     /**
+     * Creates named author.
+     * @param name - name of author
+     */
+    public Author(String name)
+    {
+        this.name = name;
+    }
+    
+    /**
      * Create author by supplying name and book metrics
      * @param name - name of author
      * @param metrics - BookMetrics object
      */
     public Author(String name, BookMetrics metrics) {
         this.name = name;
-        //this.metrics = metrics;
-        //extractMetrics(metrics);
+        this.avgWordLength = metrics.avgWordLength();
+        this.avgSentenceLength = metrics.avgSentenceLength();
+        this.wordToSentenceRatio = metrics.wordToSentenceRatio();
+        this.vocabWidth = metrics.vocabularyWidth();
+        this.bigramMap = metrics.getSymbolPairFrequencyMap();
+        this.symbolMap = metrics.getSymbolFrequencyMap();
+        this.trigramMap = metrics.getTriGramFrequencyMap();
+        this.fourgramMap = metrics.getFourGramFrequencyMap();
+        
     }    
     
     /**
-     * Creates author containing the author's name, a filePath to text authored by author, and the following metrics: <br /> 
+     * Creates author containing the author's name, a filePath to text authored by author,
+     * and the following metrics: <br /> 
      * - average word length <br/>
      * - average sentence length<br/>
      * - average word length to average sentence length ratio<br/>
@@ -48,7 +66,8 @@ public class Author
      * @param symbolMap - map of symbols in text
      */
     public Author(String name, double avgWordLength, double avgSentenceLength, double wordToSentenceRatio, 
-                        double vocabWidth, Map<String, Double> bigramMap, Map<Character, Double> symbolMap) {
+                        double vocabWidth, Map<Character, Double> symbolMap, Map<String, Double> bigramMap, 
+                        Map<String, Double> trigramMap, Map<String, Double> fourgramMap) {
         this.name = name;
         this.avgWordLength = avgWordLength;
         this.avgSentenceLength = avgSentenceLength;
@@ -56,6 +75,8 @@ public class Author
         this.vocabWidth = vocabWidth;
         this.bigramMap = bigramMap;
         this.symbolMap = symbolMap;
+        this.trigramMap = trigramMap;
+        this.fourgramMap = fourgramMap;
     }
     
     /**
@@ -130,38 +151,32 @@ public class Author
         return vocabWidth;
     }
     
-    /**
-     * Creates named author and file location of text
-     * @param name - name of author
-     */
-    public Author(String name)
-    {
-        this.name = name;
-    }
     
+    
+  
     /**
      * Compares mappings of metrics of two authors
-     * @param comparedAuthor - author to be compared to this author
+     * 
+     * @param authorToCompareTo - author to be compared to this author
      */
-    
-    public double compareSymbolMaps(Author comparedAuthor){
-        String symbol;
-        Double authorsSymbolFrequency, unknownAuthorSymbolFrequency, cumulativeComparison = 0.0;
-        Set currentAuthorKeys = this.getSymbolFrequencyMap().entrySet();
+    public double compareSymbolMaps(Author authorToCompareTo){
+        TreeMap<Character, Double> currentAuthor = (TreeMap) this.getSymbolFrequencyMap();
+        TreeMap<Character, Double> comparedAuthor = (TreeMap) authorToCompareTo.getSymbolFrequencyMap();
+        Character symbol;
+        Double currentSymbolFreq, comparedSymbolFreq, cumulativeComparison = 0.0;
+        Set currentAuthorKeys = currentAuthor.entrySet();
         Iterator iterateSymbols = currentAuthorKeys.iterator();
-        
         while (iterateSymbols.hasNext()) {
             Map.Entry symbolEntries = (Map.Entry) iterateSymbols.next();
-            symbol = (String) symbolEntries.getKey();
-            if (comparedAuthor.getSymbolFrequencyMap().containsKey(symbol)) {
-                authorsSymbolFrequency = (Double) symbolEntries.getValue();
-                unknownAuthorSymbolFrequency = comparedAuthor.getSymbolFrequencyMap().get(symbol);
-                cumulativeComparison = (calculateComparisonValue(authorsSymbolFrequency, unknownAuthorSymbolFrequency)) 
-                                           + cumulativeComparison / 2;  
+            symbol = (Character) symbolEntries.getKey();
+            if (comparedAuthor.containsKey(symbol)) {
+                currentSymbolFreq = (Double) symbolEntries.getValue();
+                comparedSymbolFreq = comparedAuthor.get(symbol);
+                if (currentSymbolFreq > comparedSymbolFreq)
+                    cumulativeComparison = ((currentSymbolFreq - comparedSymbolFreq) + cumulativeComparison) / 2;
+                else if (currentSymbolFreq < comparedSymbolFreq)
+                    cumulativeComparison = ((comparedSymbolFreq - currentSymbolFreq) + cumulativeComparison) / 2;  
             }
-            else {
-                cumulativeComparison = (cumulativeComparison + 1) / 2;
-            }    
        }
        return cumulativeComparison;
     }
